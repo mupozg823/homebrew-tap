@@ -1,0 +1,39 @@
+class CodelensMcp < Formula
+  desc "Agent-native Rust MCP server for code intelligence — 90+ tools, 25 languages"
+  homepage "https://github.com/mupozg823/codelens-mcp-plugin"
+  version "1.9.35"
+  license "Apache-2.0"
+
+  on_macos do
+    # ARM64 only — Intel Macs can use Rosetta 2
+    url "https://github.com/mupozg823/codelens-mcp-plugin/releases/download/v#{version}/codelens-mcp-darwin-arm64.tar.gz"
+    sha256 "1dc77f914dab2f0ff74d2a59e4d2d45f9973630771f08848ceb40b9818597427"
+  end
+
+  on_linux do
+    # x86_64 only — ARM64 Linux not yet supported (ort cross-compile issue)
+    url "https://github.com/mupozg823/codelens-mcp-plugin/releases/download/v#{version}/codelens-mcp-linux-x86_64.tar.gz"
+    sha256 "273557cae863c3e69144d69a05a14e7ef14272eefefc3f26385c222dbfc7a06a"
+  end
+
+  def install
+    bin.install "codelens-mcp"
+  end
+
+  def caveats
+    <<~EOS
+      Add to your Claude Code MCP config (~/.claude.json):
+
+        "codelens": {
+          "type": "stdio",
+          "command": "#{opt_bin}/codelens-mcp",
+          "args": ["."]
+        }
+    EOS
+  end
+
+  test do
+    output = shell_output("#{bin}/codelens-mcp . --cmd get_capabilities --args '{}' 2>&1")
+    assert_match "codelens", output
+  end
+end
